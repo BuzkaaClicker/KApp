@@ -35,6 +35,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.vavr.collection.List
+
+data class Route(val title: String, val content: @Composable () -> Unit)
+
+@Composable
+fun NavigationBar(routes: List<Route>, onRouteChange: Route.() -> Unit, initialRouteIndex: Int = 0) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(300.dp)
+            .padding(20.dp)
+            .fillMaxHeight(),
+    ) {
+        NavigationHeader()
+
+        Spacer(Modifier.height(20.dp))
+
+        NavigationRoutes(routes, onRouteChange, initialRouteIndex)
+    }
+}
 
 @Composable
 fun NavigationHeader() {
@@ -55,44 +76,23 @@ fun NavigationHeader() {
 }
 
 @Composable
-fun NavigationBar() {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(300.dp)
-            .padding(20.dp)
-            .fillMaxHeight(),
-    ) {
-        NavigationHeader()
-
-        Spacer(Modifier.height(20.dp))
-
-        NavigationItems()
-    }
-}
-
-@Composable
-private fun NavigationItems() {
-    val (tab, setTab) = remember { mutableStateOf(0) }
+private fun NavigationRoutes(routes: List<Route>, onRouteChange: Route.() -> Unit, initialRouteIndex: Int = 0) {
+    val (routeIndex, setRouteIndex) = remember { mutableStateOf(initialRouteIndex) }
     Column(
         horizontalAlignment = Alignment.Start,
     ) {
-        NavigationItem("Strona główna", active = tab == 0) {
-            setTab(0)
-        }
-        NavigationItem("Lewy przycisk", active = tab == 1) {
-            setTab(1)
-        }
-        NavigationItem("Prawy przycisk", active = tab == 2) {
-            setTab(2)
+        routes.withIndex().forEach { (index, route) ->
+            NavigationRoute(route.title, active = routeIndex == index) {
+                setRouteIndex(index)
+                onRouteChange(routes.get(index))
+            }
         }
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-private fun NavigationItem(title: String, active: Boolean = false, onClick: () -> Unit) {
+private fun NavigationRoute(title: String, active: Boolean = false, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = Modifier
